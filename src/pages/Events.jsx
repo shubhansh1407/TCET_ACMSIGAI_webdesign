@@ -213,6 +213,195 @@ function EventCard({ event, index, isActive }) {
   );
 }
 
+function FeaturedEventCard({ event, index, isActive }) {
+  const cardRef = useRef(null);
+
+  const { scrollYProgress } = useScroll({
+    target: cardRef,
+    offset: ["start end", "end start"],
+  });
+
+  const imageY = useTransform(scrollYProgress, [0, 1], ["-10%", "10%"]);
+  
+  const exitY = useTransform(scrollYProgress, [0.8, 1], [0, -40]);
+  const exitOpacity = useTransform(scrollYProgress, [0.8, 1], [1, 0.2]);
+
+  const cardColor = TYPE_COLORS[event.type] || "bg-retroPink";
+
+  return (
+    <motion.div
+      ref={cardRef}
+      style={{ y: exitY, opacity: exitOpacity }}
+      className="col-span-1 md:col-span-2 lg:col-span-3 w-full mb-12 mt-8 relative"
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: false, amount: 0.1 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full"
+      >
+        <div 
+          data-id={event.eventId}
+          className="relative bg-[#fdfbf7] border-[3px] border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] group"
+        >
+          {/* Marquee Header */}
+          <div className="w-full bg-retroYellow border-b-[3px] border-black overflow-hidden flex whitespace-nowrap py-2 items-center">
+            <motion.div 
+              animate={{ x: ["0%", "-50%"] }}
+              transition={{ repeat: Infinity, ease: "linear", duration: 15 }}
+              className="flex font-black text-xs uppercase tracking-widest text-black"
+            >
+              {[...Array(6)].map((_, i) => (
+                <span key={i} className="mx-4">
+                  ★ {event.title} ★ ACM SIGAI
+                </span>
+              ))}
+            </motion.div>
+          </div>
+
+          <div className="flex flex-col xl:flex-row w-full relative">
+            
+            {/* Image & Title Section */}
+            <div className="relative w-full xl:w-2/3 min-h-[400px] md:min-h-[500px] lg:min-h-[600px] bg-black overflow-hidden border-b-[3px] xl:border-b-0 xl:border-r-[3px] border-black flex flex-col items-center justify-center p-8 md:p-12 lg:p-16">
+              
+              {/* Image Container */}
+              <div className="relative w-full h-full flex-grow flex items-center justify-center">
+                {event.image ? (
+                  <img
+                    src={event.image}
+                    alt={event.title}
+                    className="w-full h-full object-contain opacity-90 group-hover:opacity-100 transition-opacity duration-700 filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)]"
+                  />
+                ) : (
+                  <div className="absolute inset-0 w-full h-full bg-paper-grid opacity-20" />
+                )}
+              </div>
+              
+              {/* Vertical Text Sidebar inside image container */}
+              <div className="absolute left-0 top-0 bottom-0 w-12 border-r-[3px] border-black/50 bg-black/40 backdrop-blur-sm hidden md:flex flex-col items-center justify-center pointer-events-none z-20">
+                 <span className="text-white font-mono text-[10px] uppercase tracking-[0.3em] -rotate-90 whitespace-nowrap">
+                   {event.date} • {event.mode}
+                 </span>
+              </div>
+
+              {/* Responsive Center Title */}
+              <div className="relative z-10 w-full mt-6 md:mt-10 flex flex-col items-center text-center pointer-events-none">
+                <h4 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black tracking-tight leading-[1.05] text-white uppercase drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">
+                  {event.title}
+                </h4>
+              </div>
+            </div>
+
+            {/* Content & Action Section */}
+            <div className="w-full xl:w-1/3 bg-[#fdfbf7] p-8 md:p-10 flex flex-col justify-between relative">
+              
+              <div className="absolute top-0 right-0 p-4">
+                 <span className={`inline-block text-black font-black text-xs uppercase border-[2px] border-black px-4 py-1.5 rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rotate-3 ${cardColor}`}>
+                   {event.type}
+                 </span>
+              </div>
+
+              <div className="space-y-8 mt-12 xl:mt-0">
+                <div className="space-y-4">
+                  <h5 className="font-black text-2xl uppercase tracking-tight">The Story</h5>
+                  <div className="w-12 h-[3px] bg-black"></div>
+                  <p className="text-sm md:text-base text-black/80 font-medium leading-relaxed">
+                    {event.description ? (
+                       event.description.length > 250 ? event.description.substring(0, 250) + '...' : event.description
+                    ) : event.shortDescription}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 text-xs font-bold uppercase">
+                  {event.venue && event.venue !== "N/A" && (
+                    <div className="border-[2px] border-black p-3 bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                      <span className="block text-black/50 mb-1">Venue</span>
+                      <span>{event.venue}</span>
+                    </div>
+                  )}
+                  {event.participants && (
+                    <div className="border-[2px] border-black p-3 bg-retroBlue shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                      <span className="block text-black/50 mb-1">Impact</span>
+                      <span>{event.participants}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-12 pt-8 border-t-[3px] border-black border-dashed">
+                <Link
+                  to={`/events/${event.eventId}`}
+                  className="w-full bg-black text-white font-black text-lg uppercase px-8 py-4 rounded-xl border-[3px] border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-white hover:text-black transition-all flex items-center justify-between group/btn"
+                >
+                  <span>Experience</span>
+                  <span className="text-2xl leading-none group-hover/btn:translate-x-2 transition-transform">
+                    →
+                  </span>
+                </Link>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+const CAROUSEL_IMAGES = [
+  "/assets/carousel/event_1.jpeg",
+  "/assets/carousel/event_2.jpeg",
+  "/assets/carousel/event_3.jpeg",
+  "/assets/carousel/event_4.jpeg",
+  "/assets/carousel/event_5.jpeg",
+  "/assets/carousel/event_6.jpeg",
+  "/assets/carousel/event_7.jpeg",
+  "/assets/carousel/event_8.jpeg",
+  "/assets/carousel/event_9.jpeg",
+  "/assets/carousel/event_10.jpeg",
+  "/assets/carousel/event_11.jpeg",
+  "/assets/carousel/event_12.jpeg",
+  "/assets/carousel/event_13.jpeg",
+  "/assets/carousel/event_14.jpeg",
+];
+
+function ImageCarousel() {
+  return (
+    <div className="w-full overflow-hidden py-12 mt-4 bg-retroYellow border-[3px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative z-10 rounded-3xl">
+      
+      {/* Decorative Label */}
+      <div className="absolute top-0 left-6 md:left-12 -translate-y-1/2 z-20">
+        <span className="bg-retroPink text-black border-[2px] border-black px-6 py-1.5 font-black text-sm uppercase tracking-widest shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] -rotate-3 inline-block">
+          ★ ACM SIGAI Memory Lane ★
+        </span>
+      </div>
+
+      <div className="flex w-full items-center whitespace-nowrap pt-2">
+        <motion.div
+          animate={{ x: ["0%", "-50%"] }}
+          transition={{ repeat: Infinity, ease: "linear", duration: 50 }}
+          className="flex gap-6 px-3 min-w-max"
+        >
+          {/* Double the array for seamless infinite scroll */}
+          {[...CAROUSEL_IMAGES, ...CAROUSEL_IMAGES].map((src, idx) => (
+            <div 
+              key={idx}
+              className="w-[240px] md:w-[320px] lg:w-[400px] shrink-0 border-[3px] border-black bg-white rounded-2xl overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] aspect-[4/3] rotate-1 hover:-rotate-1 odd:-rotate-2 even:rotate-2 transition-transform duration-500 hover:scale-105 hover:z-30 relative"
+            >
+              <img 
+                src={src} 
+                alt="ACM SIGAI Past Event"
+                className="w-full h-full object-cover grayscale-[20%] sepia-[10%] hover:grayscale-0 hover:sepia-0 transition-all duration-500"
+              />
+            </div>
+          ))}
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
 export default function Events() {
   const [filter, setFilter] = useState("ALL");
 
@@ -456,14 +645,25 @@ export default function Events() {
 
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {events.map((event, index) => (
-                              <EventCard
-                                key={event.eventId}
-                                event={event}
-                                index={index}
-                                isActive={
-                                  activeCardId === String(event.eventId)
-                                }
-                              />
+                              event.featured ? (
+                                <FeaturedEventCard
+                                  key={event.eventId}
+                                  event={event}
+                                  index={index}
+                                  isActive={
+                                    activeCardId === String(event.eventId)
+                                  }
+                                />
+                              ) : (
+                                <EventCard
+                                  key={event.eventId}
+                                  event={event}
+                                  index={index}
+                                  isActive={
+                                    activeCardId === String(event.eventId)
+                                  }
+                                />
+                              )
                             ))}
                           </div>
                         </div>
@@ -476,6 +676,9 @@ export default function Events() {
           </div>
         </div>
       </section>
+
+      {/* Extracted Images Carousel */}
+      <ImageCarousel />
     </div>
   );
 }
